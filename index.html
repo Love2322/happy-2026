@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="my">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Yamin Sandar Aung - New Year Surprise</title>
+    <style>
+        body { margin: 0; background: #000; color: white; overflow: hidden; font-family: 'Arial Black', sans-serif; }
+        canvas { position: absolute; top: 0; left: 0; }
+        
+        #overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: #000; z-index: 1000; display: flex;
+            justify-content: center; align-items: center; cursor: pointer;
+        }
+
+        .start-btn {
+            border: 2px solid #00d2ff; padding: 20px 40px; border-radius: 50px;
+            font-size: 1.2rem; color: #00d2ff; text-transform: uppercase;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse { 0% { opacity: 0.5; } 50% { opacity: 1; } 100% { opacity: 0.5; } }
+
+        .ui-panel {
+            position: absolute; width: 100%; text-align: center; top: 15%;
+            pointer-events: none; z-index: 10;
+        }
+
+        .name-banner {
+            font-size: 3.5rem; font-weight: 900; color: #fff;
+            text-shadow: 0 0 10px #ff007f, 0 0 20px #ff007f, 0 0 40px #ff007f;
+            display: none; transform: scale(0.5); transition: transform 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        #timer { font-size: 2.2rem; color: #00d2ff; letter-spacing: 5px; margin-top: 30px; text-shadow: 0 0 10px #00d2ff; }
+
+        .shake { animation: shake 0.2s infinite; }
+        @keyframes shake {
+            0% { transform: translate(1px, 1px); }
+            50% { transform: translate(-1px, -2px); }
+            100% { transform: translate(1px, 1px); }
+        }
+    </style>
+</head>
+<body id="body">
+
+    <div id="overlay">
+        <div class="start-btn">TAP TO OPEN SURPRISE ✨</div>
+    </div>
+
+    <canvas id="canvas"></canvas>
+
+    <div class="ui-panel">
+        <div id="name" class="name-banner">Yamin Sandar Aung</div>
+        <div id="timer">00:00:00</div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        const overlay = document.getElementById('overlay');
+        const nameDisplay = document.getElementById('name');
+        let fireworks = [];
+        let particles = [];
+        let started = false;
+
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        function playHeavyPop() {
+            const actx = new (window.AudioContext || window.webkitAudioContext)();
+            const osc = actx.createOscillator();
+            const gain = actx.createGain();
+            osc.connect(gain); gain.connect(actx.destination);
+            osc.type = 'square';
+            osc.frequency.setValueAtTime(60 + Math.random() * 120, actx.currentTime);
+            gain.gain.setValueAtTime(0.2, actx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.0001, actx.currentTime + 0.8);
+            osc.start(); osc.stop(actx.currentTime + 0.8);
+        }
+
+        class Firework {
+            constructor(sx, sy, tx, ty) {
+                this.x = sx; this.y = sy; this.tx = tx; this.ty = ty;
+                this.speed = 18; this.angle = Math.atan2(ty-sy, tx-sx);
+            }
+            update(index) {
+                this.x += Math.cos(this.angle) * this.speed;
+                this.y += Math.sin(this.angle) * this.speed;
+                if (Math.hypot(this.tx-this.x, this.ty-this.y) < 18) {
+                    explode(this.tx, this.ty);
+                    fireworks.splice(index, 1);
+                }
+            }
+            draw() {
+                ctx.beginPath(); ctx.arc(this.x, this.y, 3, 0, Math.PI*2);
+                ctx.fillStyle = "#fff"; ctx.fill();
+            }
+        }
+
+        function explode(x, y) {
+            playHeavyPop();
+            document.body.classList.add('shake');
+            setTimeout(() => document.body.classList.remove('shake'), 200);
+            const hue = Math.random() * 360;
+            for(let i=0; i<100; i++) {
+                particles.push({
+                    x, y, 
+                    vx: (Math.random()-0.5)*18, vy: (Math.random()-0.5)*18,
+                    alpha: 1, hue: hue + (Math.random()*40 - 20)
+                });
+            }
+        }
+
+        overlay.addEventListener('click', () => {
+            overlay.style.display = 'none';
+            started = true;
+            nameDisplay.style.display = 'block';
+            setTimeout(() => nameDisplay.style.transform = 'scale(1)', 100);
+            explode(canvas.width/2, canvas.height/3);
+        });
+
+        function loop() {
+            ctx.fillStyle = 'rgba(0,0,0,0.2)';
+            ctx.fillRect(0,0,canvas.width, canvas.height);
+            particles.forEach((p, i) => {
+                p.x += p.vx; p.y += p.vy; p.vy += 0.25; p.alpha -= 0.015;
+                if(p.alpha <= 0) particles.splice(i, 1);
+                ctx.globalAlpha = p.alpha;
+                ctx.fillStyle = `hsl(${p.hue}, 100%, 60%)`;
+                ctx.fillRect(p.x, p.y, 3, 3);
+            });
+            fireworks.forEach((f, i) => { f.update(i); f.draw(); });
+            requestAnimationFrame(loop);
+        }
+        loop();
+
+        const target = new Date("Jan 1, 2026 00:00:00").getTime();
+        setInterval(() => {
+            const now = new Date().getTime();
+            const d = target - now;
+            if(d <= 0) {
+                document.getElementById('timer').innerText = "HAPPY NEW YEAR 2026!";
+                if(Math.random() < 0.3) explode(Math.random()*canvas.width, Math.random()*canvas.height/1.5);
+            } else {
+                const h = Math.floor(d/3600000);
+                const m = Math.floor((d%3600000)/60000);
+                const s = Math.floor((d%60000)/1000);
+                document.getElementById('timer').innerText = 
+                    (h < 10 ? '0'+h : h) + ":" + (m < 10 ? '0'+m : m) + ":" + (s < 10 ? '0'+s : s);
+            }
+        }, 1000);
+
+        window.addEventListener('click', (e) => {
+            if(started) fireworks.push(new Firework(canvas.width/2, canvas.height, e.clientX, e.clientY));
+        });
+    </script>
+</body>
+</html>
