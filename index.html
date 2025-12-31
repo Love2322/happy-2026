@@ -1,147 +1,58 @@
-
 <!DOCTYPE html>
 <html lang="my">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Premium Surprise for Yamin Sandar Aung</title>
+    <title>Surprise - Yamin Sandar Aung</title>
     <style>
-        body { margin: 0; background: radial-gradient(circle at bottom, #001, #000); color: white; overflow: hidden; font-family: 'Segoe UI', sans-serif; }
+        @import url('https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Orbitron:wght@700&display=swap');
+        body { margin: 0; background: #000; color: white; overflow: hidden; font-family: sans-serif; }
         canvas { position: absolute; top: 0; left: 0; }
+        #overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 2000; display: flex; justify-content: center; align-items: center; cursor: pointer; }
+        .start-btn { padding: 15px 30px; border-radius: 50px; background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.3); color: #fff; }
+        .container { position: absolute; width: 100%; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; z-index: 100; pointer-events: none; }
         
-        /* Loading Overlay */
-        #overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: #000; z-index: 2000; display: flex; flex-direction: column;
-            justify-content: center; align-items: center; cursor: pointer;
-        }
-        .start-btn { border: 2px solid #ff007f; padding: 15px 40px; border-radius: 30px; color: #ff007f; font-weight: bold; animation: glow 1s infinite alternate; }
-        @keyframes glow { from { box-shadow: 0 0 10px #ff007f; } to { box-shadow: 0 0 30px #ff007f; } }
-
-        /* UI Elements */
-        .header { position: absolute; width: 100%; top: 20px; text-align: center; z-index: 100; pointer-events: none; }
-        .name { font-size: 2rem; font-weight: 900; color: #fff; text-shadow: 0 0 20px #ff007f; }
-        #timer { font-size: 1.2rem; color: #00d2ff; margin-top: 5px; font-family: monospace; }
-
-        /* Firework Selector Menu */
-        .menu-bar {
-            position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%);
-            display: flex; gap: 15px; background: rgba(255, 255, 255, 0.1);
-            padding: 10px 20px; border-radius: 20px; backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.2); z-index: 100;
-        }
-        .firework-item {
-            width: 50px; height: 50px; border-radius: 12px;
-            display: flex; justify-content: center; align-items: center;
-            cursor: pointer; border: 2px solid transparent; transition: 0.3s;
-            background: rgba(0, 0, 0, 0.5); font-size: 1.5rem;
-        }
-        .firework-item.active { border-color: #ff007f; transform: scale(1.1); background: #300; }
+        /* Glass UI */
+        .glass-box { background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(15px); border: 1px solid rgba(255, 255, 255, 0.1); padding: 30px 15px; border-radius: 30px; margin: 0 15px; box-shadow: 0 8px 32px 0 rgba(0,0,0,0.8); }
+        .name { font-family: 'Dancing Script', cursive; font-size: 3.2rem; color: #ff007f; text-shadow: 0 0 20px #ff007f; margin: 0 0 20px 0; }
+        #timer { font-family: 'Orbitron', sans-serif; font-size: 4.8rem; color: #00d2ff; text-shadow: 0 0 20px #00d2ff; display: block; }
+        .label { font-size: 0.7rem; letter-spacing: 4px; color: #888; text-transform: uppercase; margin-top: 10px; }
+        
+        /* Menu */
+        .menu { position: absolute; bottom: 30px; width: 100%; display: flex; justify-content: center; gap: 15px; z-index: 101; }
+        .btn { width: 55px; height: 55px; background: rgba(255,255,255,0.1); backdrop-filter: blur(10px); border-radius: 15px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; border: 1px solid rgba(255,255,255,0.2); }
+        .active { border-color: #ff007f; box-shadow: 0 0 15px #ff007f; }
     </style>
 </head>
 <body>
-
-    <div id="overlay">
-        <div style="margin-bottom: 20px; color: #aaa;">Happy New Year 2026</div>
-        <div class="start-btn">OPEN SURPRISE ✨</div>
+    <div id="overlay"><div class="start-btn">TAP TO START ✨</div></div>
+    <div class="container">
+        <div class="glass-box">
+            <h1 class="name">Yamin Sandar Aung</h1>
+            <span id="timer">00:00:00</span>
+            <div class="label">Hours : Mins : Secs</div>
+        </div>
     </div>
-
-    <div class="header">
-        <div class="name">Yamin Sandar Aung</div>
-        <div id="timer">00:00:00</div>
-    </div>
-
     <canvas id="canvas"></canvas>
-
-    <div class="menu-bar">
-        <div class="firework-item active" onclick="setType(0, this)">🎆</div>
-        <div class="firework-item" onclick="setType(1, this)">💖</div>
-        <div class="firework-item" onclick="setType(2, this)">🌟</div>
-        <div class="firework-item" onclick="setType(3, this)">✨</div>
-        <div class="firework-item" onclick="setType(4, this)">👑</div>
+    <div class="menu">
+        <div class="btn active" onclick="setType(0, this)">🎆</div>
+        <div class="btn" onclick="setType(1, this)">💖</div>
+        <div class="btn" onclick="setType(2, this)">🌟</div>
+        <div class="btn" onclick="setType(3, this)">👑</div>
     </div>
-
     <script>
-        const canvas = document.getElementById('canvas');
-        const ctx = canvas.getContext('2d');
-        let particles = [], started = false, currentType = 0;
-
-        function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
-        window.addEventListener('resize', resize); resize();
-
-        function setType(type, el) {
-            currentType = type;
-            document.querySelectorAll('.firework-item').forEach(i => i.classList.remove('active'));
-            el.classList.add('active');
-        }
-
-        function playPop() {
-            const actx = new (window.AudioContext || window.webkitAudioContext)();
-            const osc = actx.createOscillator();
-            const g = actx.createGain();
-            osc.connect(g); g.connect(actx.destination);
-            osc.frequency.setValueAtTime(100 + Math.random()*200, actx.currentTime);
-            g.gain.exponentialRampToValueAtTime(0.0001, actx.currentTime + 0.5);
-            osc.start(); osc.stop(actx.currentTime + 0.5);
-        }
-
-        function createExplosion(x, y) {
-            if(!started) return;
-            playPop();
-            const hue = Math.random() * 360;
-            let count = 60;
-            
-            // Heart shape logic for Type 1
-            for(let i=0; i<count; i++) {
-                let vx, vy;
-                if(currentType === 1) { // Heart
-                    const t = Math.random() * Math.PI * 2;
-                    vx = 0.5 * (16 * Math.sin(t)**3);
-                    vy = -0.5 * (13 * Math.cos(t) - 5 * Math.cos(2*t) - 2 * Math.cos(3*t) - Math.cos(4*t));
-                } else {
-                    const angle = Math.random() * Math.PI * 2;
-                    const speed = Math.random() * 8 + 2;
-                    vx = Math.cos(angle) * speed;
-                    vy = Math.sin(angle) * speed;
-                }
-                particles.push({ x, y, vx, vy, alpha: 1, hue });
-            }
-        }
-
-        document.getElementById('overlay').onclick = () => {
-            document.getElementById('overlay').style.display = 'none';
-            started = true;
-            createExplosion(canvas.width/2, canvas.height/2);
-        };
-
-        window.onclick = (e) => { if(e.target.tagName !== 'DIV') createExplosion(e.clientX, e.clientY); };
-
-        function loop() {
-            ctx.fillStyle = 'rgba(0,0,0,0.2)';
-            ctx.fillRect(0,0,canvas.width, canvas.height);
-            particles.forEach((p, i) => {
-                p.x += p.vx; p.y += p.vy; p.vy += 0.1; p.alpha -= 0.015;
-                if(p.alpha <= 0) particles.splice(i, 1);
-                ctx.globalAlpha = p.alpha;
-                ctx.fillStyle = `hsl(${p.hue}, 100%, 70%)`;
-                ctx.beginPath(); ctx.arc(p.x, p.y, 2.5, 0, Math.PI*2); ctx.fill();
-            });
-            requestAnimationFrame(loop);
-        }
-        loop();
-
+        const canvas = document.getElementById('canvas'), ctx = canvas.getContext('2d');
+        let particles = [], stars = [], started = false, type = 0;
+        function init() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; stars = []; for(let i=0; i<80; i++) stars.push({x: Math.random()*canvas.width, y: Math.random()*canvas.height, s: Math.random()*2}); }
+        window.addEventListener('resize', init); init();
+        function setType(t, el) { type = t; document.querySelectorAll('.btn').forEach(b => b.classList.remove('active')); el.classList.add('active'); }
+        function explode(x, y) { if(!started) return; const hue = Math.random()*360; for(let i=0; i<70; i++) { let vx, vy; if(type === 1) { const t = Math.random()*Math.PI*2; vx = (16*Math.sin(t)**3)/2.5; vy = -(13*Math.cos(t)-5*Math.cos(2*t)-2*Math.cos(3*t)-Math.cos(4*t))/2.5; } else { const a = Math.random()*Math.PI*2, s = Math.random()*8+2; vx = Math.cos(a)*s; vy = Math.sin(a)*s; } particles.push({x, y, vx, vy, a: 1, h: hue}); } }
+        document.getElementById('overlay').onclick = () => { document.getElementById('overlay').style.display = 'none'; started = true; };
+        window.onclick = (e) => { if(e.target.tagName !== 'DIV') explode(e.clientX, e.clientY); };
+        function animate() { ctx.fillStyle = 'rgba(0,0,0,0.2)'; ctx.fillRect(0,0,canvas.width, canvas.height); ctx.fillStyle = "white"; stars.forEach(s => ctx.fillRect(s.x, s.y, s.s, s.s)); particles.forEach((p, i) => { p.x += p.vx; p.y += p.vy; p.vy += 0.15; p.a -= 0.015; if(p.a <= 0) particles.splice(i, 1); ctx.globalAlpha = p.a; ctx.fillStyle = `hsl(${p.h}, 100%, 70%)`; ctx.beginPath(); ctx.arc(p.x, p.y, 2, 0, Math.PI*2); ctx.fill(); }); requestAnimationFrame(animate); }
+        animate();
         const target = new Date("Jan 1, 2026 00:00:00").getTime();
-        setInterval(() => {
-            const d = target - new Date().getTime();
-            if(d <= 0) {
-                document.getElementById('timer').innerText = "HAPPY NEW YEAR!";
-            } else {
-                const h = Math.floor(d/3600000);
-                const m = Math.floor((d%3600000)/60000);
-                const s = Math.floor((d%60000)/1000);
-                document.getElementById('timer').innerText = `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
-            }
-        }, 1000);
+        setInterval(() => { const d = target - new Date().getTime(); if(d <= 0) { document.getElementById('timer').innerText = "HAPPY 2026"; } else { const h = Math.floor(d/3600000), m = Math.floor((d%3600000)/60000), s = Math.floor((d%60000)/1000); document.getElementById('timer').innerText = `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`; } }, 1000);
     </script>
 </body>
 </html>
